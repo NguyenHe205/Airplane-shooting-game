@@ -3,6 +3,7 @@
 
 #include <SDL.h>
 #include <SDL_image.h>
+#include <SDL_mixer.h>
 #include <vector>
 #include "Background.h"
 #include "Player.h"
@@ -43,6 +44,11 @@ private:
     Boss* boss;
     static int bossHealth;
     std::vector<BossBullet> bossBullets;
+
+    Mix_Chunk* shootSound;
+    Mix_Chunk* explosionSound;
+    Mix_Chunk* hitSound;
+    Mix_Music* backgroundMusic;
 
 public:
     Game();

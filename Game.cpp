@@ -3,13 +3,14 @@
 #include <iostream>
 #include <fstream>
 #include <SDL_ttf.h>
+#include <SDL_mixer.h>
 
 const int SCREEN_WIDTH = 800;
 const int SCREEN_HEIGHT = 600;
 
 int Game::bossHealth = 7;
 
-Game::Game() : window(nullptr), renderer(nullptr), running(false), score(0), highScore(0), spacePressed(false), inStartScreen(true), inGameOver(false), font(nullptr), scoreTexture(nullptr), highScoreTexture(nullptr), startScreenTexture(nullptr), gameOverTexture(nullptr), finalScoreTexture(nullptr), heartTexture(nullptr), bossDefeatCount(0), boss(nullptr) {
+Game::Game() : window(nullptr), renderer(nullptr), running(false), score(0), highScore(0), spacePressed(false), inStartScreen(true), inGameOver(false), font(nullptr), scoreTexture(nullptr), highScoreTexture(nullptr), startScreenTexture(nullptr), gameOverTexture(nullptr), finalScoreTexture(nullptr), heartTexture(nullptr), bossDefeatCount(0), boss(nullptr), shootSound(nullptr), explosionSound(nullptr), hitSound(nullptr), backgroundMusic(nullptr) {
     loadHighScore();
     explosions.clear();
     bossBullets.clear();
@@ -17,8 +18,13 @@ Game::Game() : window(nullptr), renderer(nullptr), running(false), score(0), hig
 }
 
 bool Game::init() {
-    if (SDL_Init(SDL_INIT_VIDEO) < 0) {
+    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) < 0) {
         std::cout << "SDL_Init thất bại: " << SDL_GetError() << std::endl;
+        return false;
+    }
+
+    if(Mix_OpenAudio(4410, MIX_DEFAULT_FORMAT,2,2048) < 0){
+        std::cout << "Mix_OpenAudio failed" << Mix_GetError() << std::endl;
         return false;
     }
     window = SDL_CreateWindow("Airplane shooting",
@@ -69,6 +75,30 @@ bool Game::init() {
         std::cout << "Failed to load heart texture: " << IMG_GetError() << std::endl;
         return false;
     }
+    shootSound = Mix_LoadWAV( "shoot.wav");
+    if(!shootSound) {
+        std::cout << "Failed to load shoot.wav" << Mix_GetError() << std::endl;
+        return false;
+
+    }
+
+    explosionSound = Mix_LoadWAV("explosion.wav");
+    if(!explosionSound){
+        std::cout << "Failed to load explosionSound" << Mix_GetError() << std::endl;
+        return false;
+    }
+
+    hitSound = Mix_LoadWAV("hit.wav");
+    if(!hitSound){
+        std::cout << "Failed to load hit.wav" << Mix_GetError() << std::endl;
+        return false;
+    }
+
+    backgroundMusic = Mix_LoadMUS("background.mp3");
+    if(!backgroundMusic){
+        std::cout << "Failed to load background.mp3" << Mix_GetError() << std::endl;
+        return false;
+    }
 
 
     for (int i = 0; i < 3; ++i) {
@@ -93,6 +123,12 @@ void Game::cleanup() {
     if (font) TTF_CloseFont(font);
     if (boss) delete boss;
 
+    if (shootSound) Mix_FreeChunk(shootSound);
+    if(explosionSound) Mix_FreeChunk(explosionSound);
+    if(hitSound) Mix_FreeChunk(hitSound);
+    if(backgroundMusic)  Mix_FreeMusic(backgroundMusic);
+    Mix_CloseAudio();
+
     TTF_Quit();
     IMG_Quit();
     SDL_DestroyRenderer(renderer);
@@ -107,6 +143,9 @@ void Game::run() {
     std::vector<Enemy> enemies;
     bullets.reserve(100);
 
+    if( backgroundMusic){
+        Mix_PlayMusic(backgroundMusic, -1);
+    }
 
     const float targetFrameTime = 1000.0f / 60.0f;
 
@@ -148,6 +187,9 @@ void Game::handleEvents(Player& player, std::vector<Bullet>& bullets) {
     if (keyboard[SDL_SCANCODE_SPACE] && !spacePressed) {
         player.shoot(bullets);
         spacePressed = true;
+        if(shootSound){
+            Mix_PlayChannel(-1, shootSound, 0);
+        }
     }
     if (!keyboard[SDL_SCANCODE_SPACE]) spacePressed = false;
 }
@@ -270,6 +312,9 @@ void Game::update(Player& player, std::vector<Bullet>& bullets, std::vector<Enem
             if (SDL_HasIntersection(&enemyIt->getRect(), &bulletIt->getRect())) {
                 score += 10;
                 explosions.emplace_back(renderer, enemyIt->getX() + enemyIt->getW()/2, enemyIt->getY()+enemyIt->getH()/2);
+               if (explosionSound){
+                Mix_PlayChannel(-1, explosionSound, 0);
+               }
                 enemyIt = enemies.erase(enemyIt);
                 bulletIt = bullets.erase(bulletIt);
                 enemyRemoved = true;
@@ -281,7 +326,13 @@ void Game::update(Player& player, std::vector<Bullet>& bullets, std::vector<Enem
 
         if (!enemyRemoved && SDL_HasIntersection(&enemyIt->getRect(), &player.getRect())) {
             player.loseLife();
+            if(hitSound){
+                Mix_PlayChannel(-1, hitSound, 0);
+            }
             explosions.emplace_back(renderer, player.getRect().x + player.getRect().w/2, player.getRect().y + player.getRect().h/2);
+            if (explosionSound){
+                Mix_PlayChannel(-1, explosionSound, 0);
+               }
             enemyIt = enemies.erase(enemyIt);
             if (player.getLives() <= 0) {
                 inGameOver = true;
@@ -312,6 +363,9 @@ void Game::update(Player& player, std::vector<Bullet>& bullets, std::vector<Enem
                         buffs.emplace_back(renderer, spawnX , 0);
                     }
                     explosions.emplace_back(renderer, boss->getRect().x + boss->getRect().w/2, boss->getRect().y + boss->getRect().h/2);
+                    if (explosionSound){
+                Mix_PlayChannel(-1, explosionSound, 0);
+               }
                     delete boss;
                     boss = nullptr;
                     bossHealth += 3;
@@ -324,6 +378,9 @@ void Game::update(Player& player, std::vector<Bullet>& bullets, std::vector<Enem
 
         if (!bossHit && boss && SDL_HasIntersection(&boss->getRect(), &player.getRect())) {
             player.loseLife();
+            if(hitSound){
+                Mix_PlayChannel(-1, hitSound, 0);
+            }
             if (player.getLives() <= 0) {
                 inGameOver = true;
             }
@@ -338,6 +395,9 @@ void Game::update(Player& player, std::vector<Bullet>& bullets, std::vector<Enem
     for (auto bulletIt = bossBullets.begin(); bulletIt != bossBullets.end();) {
         if (SDL_HasIntersection(&bulletIt->getRect(), &player.getRect())) {
             player.loseLife();
+            if(hitSound){
+                Mix_PlayChannel(-1, hitSound, 0);
+            }
             bulletIt = bossBullets.erase(bulletIt);
             if (player.getLives() <= 0) {
                 inGameOver = true;

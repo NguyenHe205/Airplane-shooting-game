@@ -3,9 +3,10 @@
 	"Game.h"
 	<iostream>
 
-1746365310 c:\users\admin\onedrive\dokumen\main\airplane shooting\game.h
+1746633264 c:\users\admin\onedrive\dokumen\main\airplane shooting\game.h
 	<SDL.h>
 	<SDL_image.h>
+	<SDL_mixer.h>
 	<vector>
 	"Background.h"
 	"Player.h"
@@ -59,12 +60,13 @@
 	<SDL.h>
 	<SDL_ttf.h>
 
-1746590872 source:c:\users\admin\onedrive\dokumen\main\airplane shooting\game.cpp
+1746633360 source:c:\users\admin\onedrive\dokumen\main\airplane shooting\game.cpp
 	"Game.h"
 	<ctime>
 	<iostream>
 	<fstream>
 	<SDL_ttf.h>
+	<SDL_mixer.h>
 
 1739035132 c:\users\admin\onedrive\dokumen\sdl2-2.32.0\x86_64-w64-mingw32\include\sdl2\sdl.h
 	"SDL_main.h"
