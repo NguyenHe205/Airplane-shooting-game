@@ -58,6 +58,12 @@ bool Game::init() {
         return false;
     }
 
+    gameOverTexture = loadTexture("GameOverScreen.png");
+    if (!gameOverTexture){
+        std::cout << "Failed to load gameoverscreen.png" << IMG_GetError() << std::endl;
+        return false;
+    }
+
     heartTexture = loadTexture("heart-removebg-preview.png");
     if (!heartTexture) {
         std::cout << "Failed to load heart texture: " << IMG_GetError() << std::endl;
@@ -175,7 +181,9 @@ void Game::handleGameOverEvents(Player& player, std::vector<Bullet>& bullets, st
         if (e.type == SDL_MOUSEBUTTONDOWN) {
             int x, y;
             SDL_GetMouseState(&x, &y);
-            SDL_Rect restartButton = {SCREEN_WIDTH / 2 - 50, 300, 100, 50};
+            SDL_Rect restartButton = {354, 246, 100, 50};
+            SDL_Rect quitButton = {354, 330, 100, 50};
+
             if (x >= restartButton.x && x <= restartButton.x + restartButton.w &&
                 y >= restartButton.y && y <= restartButton.y + restartButton.h) {
                 std::cout << "Final Score: " << score << std::endl;
@@ -201,20 +209,23 @@ void Game::handleGameOverEvents(Player& player, std::vector<Bullet>& bullets, st
                 if (highScoreTexture) SDL_DestroyTexture(highScoreTexture);
                 highScoreTexture = nullptr;
                 renderHighScore();
+            } else if (x >= quitButton.x && x <= quitButton.x +quitButton.w && y >= quitButton.y && y <= quitButton.y + quitButton.h){
+                running = false;
+                inGameOver = false;
             }
         }
     }
 }
 
 void Game::update(Player& player, std::vector<Bullet>& bullets, std::vector<Enemy>& enemies) {
-    if (!boss && (rand() % 2000 == 0)) {
+    if (!boss && (rand() % 1500 == 0)) {
         int bossWidth = 120;
         int maxX = SCREEN_WIDTH - bossWidth;
         int spawnX = rand() % (maxX + 1);
         boss = new Boss(renderer, spawnX, 0, bossHealth);
     }
 
-    if (rand() % 60 == 0) {
+    if (rand() % 40 == 0) {
         int enemyWidth = 80;
         int maxX = SCREEN_WIDTH - enemyWidth;
         int spawnX = rand() % (maxX + 1);
@@ -405,26 +416,33 @@ void Game::renderGameOverScreen() {
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
     SDL_RenderClear(renderer);
 
-    updateGameOverTextures();
+    SDL_Rect gameOverRect = {0, 0, SCREEN_WIDTH, SCREEN_HEIGHT};
     SDL_RenderCopy(renderer, gameOverTexture, nullptr, &gameOverRect);
+
+    if (finalScoreTexture) SDL_DestroyTexture(finalScoreTexture);
+    std::string finalScoreText = "Point: " + std::to_string(score);
+    SDL_Surface* finalScoreSurface = TTF_RenderText_Solid(font,finalScoreText.c_str(), {255,255,255,255});
+    finalScoreTexture = SDL_CreateTextureFromSurface(renderer, finalScoreSurface);
+    SDL_QueryTexture(finalScoreTexture, nullptr, nullptr, &finalScoreRect.w, &finalScoreRect.h);
+    finalScoreRect.x = 354;
+    finalScoreRect.y = 184;
     SDL_RenderCopy(renderer, finalScoreTexture, nullptr, &finalScoreRect);
-    SDL_RenderCopy(renderer, highScoreTexture, nullptr, &highScoreGameOverRect);
+    SDL_FreeSurface(finalScoreSurface);
 
-    SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
-    const int buttonWidth = 100;
-    const int buttonHeight = 50;
-    SDL_Rect restartButton = {SCREEN_WIDTH / 2 - buttonWidth / 2, 300, buttonWidth, buttonHeight};
-    SDL_RenderFillRect(renderer, &restartButton);
+    int x , y;
+    SDL_GetMouseState(&x, &y);
+    SDL_Rect restartButton = {300, 246,250, 50};
+    SDL_Rect quitButton = {300, 320,250, 50};
+    SDL_SetRenderDrawColor (renderer, 255, 255, 255,100);
+    SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
+    if( x >= restartButton.x && x <= restartButton.x + restartButton.w && y >= restartButton.y && y <= restartButton.y + restartButton.h){
+        SDL_RenderFillRect(renderer, &restartButton);
+    }
+    if(x >= quitButton.x && x <= quitButton.x + quitButton.w && y >= quitButton.y && y <= quitButton.y + quitButton.h){
+        SDL_RenderFillRect(renderer, &quitButton);
+    }
 
-    SDL_Surface* restartSurface = TTF_RenderText_Solid(font, "Restart", {0, 0, 0, 255});
-    SDL_Texture* restartTexture = SDL_CreateTextureFromSurface(renderer, restartSurface);
-    SDL_Rect restartTextRect = {0, 0, 0, 0};
-    SDL_QueryTexture(restartTexture, nullptr, nullptr, &restartTextRect.w, &restartTextRect.h);
-    restartTextRect.x = SCREEN_WIDTH / 2 - restartTextRect.w / 2;
-    restartTextRect.y = 310;
-    SDL_RenderCopy(renderer, restartTexture, nullptr, &restartTextRect);
-    SDL_FreeSurface(restartSurface);
-    SDL_DestroyTexture(restartTexture);
+    renderHighScore();
 }
 
 void Game::renderHighScore() {
@@ -443,7 +461,7 @@ void Game::updateScoreTexture() {
     SDL_FreeSurface(surface);
     SDL_QueryTexture(scoreTexture, nullptr, nullptr, &scoreRect.w, &scoreRect.h);
     scoreRect.x = 0;
-    scoreRect.y = highScoreRect.h; // Dưới High Score
+    scoreRect.y = highScoreRect.h;
 }
 
 void Game::updateHighScoreTexture() {
@@ -454,35 +472,11 @@ void Game::updateHighScoreTexture() {
     SDL_FreeSurface(surface);
     SDL_QueryTexture(highScoreTexture, nullptr, nullptr, &highScoreRect.w, &highScoreRect.h);
     highScoreRect.x = 0;
-    highScoreRect.y = 0; // Góc trên trái
+    highScoreRect.y = 0;
 }
 
 void Game::updateGameOverTextures() {
-    if (gameOverTexture) SDL_DestroyTexture(gameOverTexture);
-    SDL_Surface* gameOverSurface = TTF_RenderText_Solid(font, "Game Over", {255, 255, 255, 255});
-    gameOverTexture = SDL_CreateTextureFromSurface(renderer, gameOverSurface);
-    SDL_QueryTexture(gameOverTexture, nullptr, nullptr, &gameOverRect.w, &gameOverRect.h);
-    gameOverRect.x = SCREEN_WIDTH / 2 - gameOverRect.w / 2;
-    gameOverRect.y = 150;
-    SDL_FreeSurface(gameOverSurface);
 
-    if (finalScoreTexture) SDL_DestroyTexture(finalScoreTexture);
-    std::string finalScoreText = "Your Score: " + std::to_string(score);
-    SDL_Surface* finalScoreSurface = TTF_RenderText_Solid(font, finalScoreText.c_str(), {255, 255, 255, 255});
-    finalScoreTexture = SDL_CreateTextureFromSurface(renderer, finalScoreSurface);
-    SDL_QueryTexture(finalScoreTexture, nullptr, nullptr, &finalScoreRect.w, &finalScoreRect.h);
-    finalScoreRect.x = SCREEN_WIDTH / 2 - finalScoreRect.w / 2;
-    finalScoreRect.y = 200;
-    SDL_FreeSurface(finalScoreSurface);
-
-    if (highScoreTexture) SDL_DestroyTexture(highScoreTexture);
-    std::string highScoreText = "High Score: " + std::to_string(highScore);
-    SDL_Surface* highScoreSurface = TTF_RenderText_Solid(font, highScoreText.c_str(), {255, 255, 255, 255});
-    highScoreTexture = SDL_CreateTextureFromSurface(renderer, highScoreSurface);
-    SDL_QueryTexture(highScoreTexture, nullptr, nullptr, &highScoreGameOverRect.w, &highScoreGameOverRect.h);
-    highScoreGameOverRect.x = SCREEN_WIDTH / 2 - highScoreGameOverRect.w / 2;
-    highScoreGameOverRect.y = 250;
-    SDL_FreeSurface(highScoreSurface);
 }
 
 void Game::loadHighScore() {
