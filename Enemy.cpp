@@ -2,7 +2,7 @@
 #include <SDL_image.h>
 #include <iostream>
 
-Enemy::Enemy(SDL_Renderer* rend, int startX, int startY) : renderer(rend), texture(nullptr) {
+Enemy::Enemy(SDL_Renderer* rend, int startX, int startY) :  texture(nullptr), renderer(rend) {
     texture = IMG_LoadTexture(renderer, "enemy-removebg.png");
     if (!texture) {
         std::cout << "Failed to load enemy texture: " << IMG_GetError() << std::endl;

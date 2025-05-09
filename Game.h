@@ -50,6 +50,9 @@ private:
     Mix_Chunk* hitSound;
     Mix_Music* backgroundMusic;
 
+    int nextBuffScoreThreshold;
+    bool firstBuffTriggered;
+
 public:
     Game();
     bool init();

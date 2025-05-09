@@ -8,8 +8,8 @@ private:
     SDL_Texture* texture;
     SDL_Renderer* renderer;
     SDL_Rect srcRect, destRect1, destRect2;
-    float scrollSpeed;
     float yPos1, yPos2;
+     float scrollSpeed;
 
     static const int SCREEN_WIDTH = 800;
     static const int SCREEN_HIGHT = 600;

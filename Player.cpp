@@ -3,7 +3,7 @@
 #include <iostream>
 #include <vector>
 
-Player::Player(SDL_Renderer* rend) : renderer(rend), lives(3), hasBuff(false) {
+Player::Player(SDL_Renderer* rend) : renderer(rend), lives(3), hasBuff(false), shootingMode(1), buffTimer(0) {
     texture = IMG_LoadTexture(renderer, "player.png");
     if (!texture) {
         std::cout << "Failed to load player texture: " << IMG_GetError() << std::endl;
@@ -35,6 +35,7 @@ void Player::update(const Uint8* keyboard) {
     if (keyboard[SDL_SCANCODE_DOWN] && rect.y < 600 - rect.h) {
         rect.y += SPEED;
     }
+    updateBuffTimer();
 }
 
 void Player::render() {
@@ -42,7 +43,11 @@ void Player::render() {
 }
 
 void Player::shoot(std::vector<Bullet>& bullets) {
-    if (hasBuff) {
+    if(shootingMode == 3){
+            bullets.emplace_back(renderer, rect.x + rect.w/2 - 5, rect.y);
+            bullets.emplace_back(renderer, rect.x + 10, rect.y);
+            bullets.emplace_back(renderer, rect.x+rect.w - 10, rect.y);
+    }else if (hasBuff) {
         bullets.emplace_back(renderer, rect.x + 10, rect.y);
         bullets.emplace_back(renderer, rect.x + rect.w - 10, rect.y);
     } else {
@@ -62,8 +67,25 @@ void Player::reset(){
      rect.y = 600 - rect.h - 10;
      lives = 3;
      hasBuff = false;
+     shootingMode = 1;
+     buffTimer = 0;
 }
 
-void Player::activateBuff() {
-    hasBuff = true;
+void Player::activateBuff(int buffType) {
+    if(buffType == 1){
+        shootingMode = 3;
+        buffTimer = BUFF_DURATION;
+    } else if (buffType == 2){
+    hasBuff= true;
+    }
 }
+
+void Player::updateBuffTimer(){
+    if (buffTimer > 0){
+        --buffTimer;
+        if(buffTimer <= 0){
+            shootingMode = 1;
+        }
+    }
+}
+

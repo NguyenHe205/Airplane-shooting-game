@@ -8,9 +8,9 @@
 const int SCREEN_WIDTH = 800;
 const int SCREEN_HEIGHT = 600;
 
-int Game::bossHealth = 7;
+int Game::bossHealth = 10;
 
-Game::Game() : window(nullptr), renderer(nullptr), running(false), score(0), highScore(0), spacePressed(false), inStartScreen(true), inGameOver(false), font(nullptr), scoreTexture(nullptr), highScoreTexture(nullptr), startScreenTexture(nullptr), gameOverTexture(nullptr), finalScoreTexture(nullptr), heartTexture(nullptr), bossDefeatCount(0), boss(nullptr), shootSound(nullptr), explosionSound(nullptr), hitSound(nullptr), backgroundMusic(nullptr) {
+Game::Game() : window(nullptr), renderer(nullptr), running(false), score(0), highScore(0), spacePressed(false), inStartScreen(true), inGameOver(false), font(nullptr), scoreTexture(nullptr), highScoreTexture(nullptr), startScreenTexture(nullptr), gameOverTexture(nullptr), finalScoreTexture(nullptr), heartTexture(nullptr), bossDefeatCount(0), boss(nullptr), shootSound(nullptr), explosionSound(nullptr), hitSound(nullptr), backgroundMusic(nullptr), nextBuffScoreThreshold(2500), firstBuffTriggered(false) {
     loadHighScore();
     explosions.clear();
     bossBullets.clear();
@@ -246,6 +246,8 @@ void Game::handleGameOverEvents(Player& player, std::vector<Bullet>& bullets, st
                 }
                 player.reset();
                 player.resetLives();
+                nextBuffScoreThreshold = 2500;
+                firstBuffTriggered = false;
 
                 loadHighScore();
                 if (highScoreTexture) SDL_DestroyTexture(highScoreTexture);
@@ -260,7 +262,7 @@ void Game::handleGameOverEvents(Player& player, std::vector<Bullet>& bullets, st
 }
 
 void Game::update(Player& player, std::vector<Bullet>& bullets, std::vector<Enemy>& enemies) {
-    if (!boss && (rand() % 1500 == 0)) {
+    if (!boss && (rand() % 1000 == 0)) {
         int bossWidth = 120;
         int maxX = SCREEN_WIDTH - bossWidth;
         int spawnX = rand() % (maxX + 1);
@@ -297,7 +299,11 @@ void Game::update(Player& player, std::vector<Bullet>& bullets, std::vector<Enem
             it = buffs.erase(it);
 
         } else if (SDL_HasIntersection(&it-> getRect(), &player.getRect())){
-            player.activateBuff();
+            if (it -> getType() == 1){
+                player.activateBuff(1);
+            } else if (it -> getType() == 2){
+            player.activateBuff(2);
+            }
             it = buffs.erase(it);
         } else {
             ++it;
@@ -311,6 +317,7 @@ void Game::update(Player& player, std::vector<Bullet>& bullets, std::vector<Enem
         for (auto bulletIt = bullets.begin(); bulletIt != bullets.end() && !enemyRemoved;) {
             if (SDL_HasIntersection(&enemyIt->getRect(), &bulletIt->getRect())) {
                 score += 10;
+                updateScoreTexture();
                 explosions.emplace_back(renderer, enemyIt->getX() + enemyIt->getW()/2, enemyIt->getY()+enemyIt->getH()/2);
                if (explosionSound){
                 Mix_PlayChannel(-1, explosionSound, 0);
@@ -355,12 +362,13 @@ void Game::update(Player& player, std::vector<Bullet>& bullets, std::vector<Enem
                 bulletIt = bullets.erase(bulletIt);
                 if (boss->isDestroyed()) {
                     score += 300;
+                    updateScoreTexture();
                     bossDefeatCount++;
                     if( bossDefeatCount == 2){
                         int buffWidth = 30;
                         int maxX = SCREEN_WIDTH - buffWidth;
                         int spawnX = rand() % (maxX + 1);
-                        buffs.emplace_back(renderer, spawnX , 0);
+                        buffs.emplace_back(renderer, spawnX , 0, 2);
                     }
                     explosions.emplace_back(renderer, boss->getRect().x + boss->getRect().w/2, boss->getRect().y + boss->getRect().h/2);
                     if (explosionSound){
@@ -416,6 +424,19 @@ void Game::update(Player& player, std::vector<Bullet>& bullets, std::vector<Enem
             ++it;
         }
     }
+
+    if (score >= nextBuffScoreThreshold && !player.isBuffActive()){
+        int buffWidth = 30;
+        int maxX = SCREEN_WIDTH - buffWidth;
+        int spawnX = rand() % (maxX + 1);
+        buffs.emplace_back(renderer, spawnX, 0, 1);
+        if (!firstBuffTriggered){
+            firstBuffTriggered = true;
+            nextBuffScoreThreshold += 700;
+        } else {
+        nextBuffScoreThreshold += 700;
+        }
+    }
 }
 
 bool Game::start() {
@@ -447,10 +468,25 @@ void Game::render(Player& player, std::vector<Bullet>& bullets, std::vector<Enem
         updateScoreTexture();
         updateHighScoreTexture();
 
-
+        SDL_Rect highScoreBg = highScoreRect;
+        highScoreBg.x -= 5;
+        highScoreBg.y -=5;
+        highScoreBg.w += 10;
+        highScoreBg.h += 10;
+        SDL_SetRenderDrawColor(renderer, 0, 0, 0, 128);
+        SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
+        SDL_RenderFillRect(renderer, &highScoreBg);
         SDL_RenderCopy(renderer, highScoreTexture, nullptr, &highScoreRect);
-        SDL_RenderCopy(renderer, scoreTexture, nullptr, &scoreRect);
 
+
+        SDL_Rect scoreBg= scoreRect;
+        scoreBg.x -= 5;
+        scoreBg.y -= 5;
+        scoreBg.w += 10;
+        scoreBg.h += 10;
+        SDL_SetRenderDrawColor(renderer, 0, 0, 0, 128);
+        SDL_RenderFillRect(renderer, &scoreBg);
+        SDL_RenderCopy(renderer, scoreTexture, nullptr, &scoreRect);
 
         int lives = player.getLives();
         for (int i = 0; i < lives && i < 3; ++i) {
@@ -516,22 +552,38 @@ void Game::renderHighScore() {
 void Game::updateScoreTexture() {
     if (scoreTexture) SDL_DestroyTexture(scoreTexture);
     std::string scoreText = "Score: " + std::to_string(score);
-    SDL_Surface* surface = TTF_RenderText_Solid(font, scoreText.c_str(), {255, 255, 255, 255}); // Sửa: Màu trắng
+    SDL_Surface* surface = TTF_RenderText_Solid(font, scoreText.c_str(), {255, 255, 255, 255});
+    if (!surface){
+        std::cout <<"failed to create score surface" << TTF_GetError() << std::endl;
+        return;
+    }
     scoreTexture = SDL_CreateTextureFromSurface(renderer, surface);
-    SDL_FreeSurface(surface);
+    SDL_FreeSurface (surface);
+    if(!scoreTexture){
+        std::cout << "failed to create score texture" << SDL_GetError() << std::endl;
+        return;
+    }
     SDL_QueryTexture(scoreTexture, nullptr, nullptr, &scoreRect.w, &scoreRect.h);
-    scoreRect.x = 0;
-    scoreRect.y = highScoreRect.h;
+    scoreRect.x = 10;
+    scoreRect.y = highScoreRect.h + 5;
 }
 
 void Game::updateHighScoreTexture() {
     if (highScoreTexture) SDL_DestroyTexture(highScoreTexture);
     std::string highScoreText = "High Score: " + std::to_string(highScore);
-    SDL_Surface* surface = TTF_RenderText_Solid(font, highScoreText.c_str(), {255, 255, 255, 255}); // Sửa: Màu trắng
+    SDL_Surface* surface = TTF_RenderText_Solid(font, highScoreText.c_str(), {255, 255, 255, 255});
+    if(!surface){
+        std::cout << "failed to create highscore surface" << TTF_GetError() << std::endl;
+        return ;
+    }
     highScoreTexture = SDL_CreateTextureFromSurface(renderer, surface);
     SDL_FreeSurface(surface);
-    SDL_QueryTexture(highScoreTexture, nullptr, nullptr, &highScoreRect.w, &highScoreRect.h);
-    highScoreRect.x = 0;
+    if(!highScoreTexture){
+        std::cout <<"failed to create highscore texture" << SDL_GetError() << std::endl;
+        return ;
+    }
+    SDL_QueryTexture (highScoreTexture, nullptr, nullptr, &highScoreRect.w , &highScoreRect.h);
+    highScoreRect.x = 10;
     highScoreRect.y = 0;
 }
 

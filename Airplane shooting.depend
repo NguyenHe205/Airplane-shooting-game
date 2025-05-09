@@ -3,7 +3,7 @@
 	"Game.h"
 	<iostream>
 
-1746633264 c:\users\admin\onedrive\dokumen\main\airplane shooting\game.h
+1746687718 c:\users\admin\onedrive\dokumen\main\airplane shooting\game.h
 	<SDL.h>
 	<SDL_image.h>
 	<SDL_mixer.h>
@@ -17,7 +17,7 @@
 	"Explosion.h"
 	"Buff.h"
 
-1746365758 c:\users\admin\onedrive\dokumen\main\airplane shooting\player.h
+1746688225 c:\users\admin\onedrive\dokumen\main\airplane shooting\player.h
 	<iostream>
 	<SDL.h>
 	<SDL_ttf.h>
@@ -29,7 +29,7 @@
 	<SDL.h>
 	<SDL_ttf.h>
 
-1746073555 c:\users\admin\onedrive\dokumen\main\airplane shooting\enemy.h
+1746688225 c:\users\admin\onedrive\dokumen\main\airplane shooting\enemy.h
 	<SDL.h>
 	<iostream>
 	<SDL_ttf.h>
@@ -39,12 +39,12 @@
 	<SDL_image.h>
 	<iostream>
 
-1744271575 source:c:\users\admin\onedrive\dokumen\main\airplane shooting\enemy.cpp
+1746688225 source:c:\users\admin\onedrive\dokumen\main\airplane shooting\enemy.cpp
 	"Enemy.h"
 	<SDL_image.h>
 	<iostream>
 
-1746365758 source:c:\users\admin\onedrive\dokumen\main\airplane shooting\player.cpp
+1746688292 source:c:\users\admin\onedrive\dokumen\main\airplane shooting\player.cpp
 	"Player.h"
 	<SDL_image.h>
 	<iostream>
@@ -55,12 +55,12 @@
 	<SDL_image.h>
 	<iostream>
 
-1744170957 c:\users\admin\onedrive\dokumen\main\airplane shooting\background.h
+1746688225 c:\users\admin\onedrive\dokumen\main\airplane shooting\background.h
 	<iostream>
 	<SDL.h>
 	<SDL_ttf.h>
 
-1746633360 source:c:\users\admin\onedrive\dokumen\main\airplane shooting\game.cpp
+1746689375 source:c:\users\admin\onedrive\dokumen\main\airplane shooting\game.cpp
 	"Game.h"
 	<ctime>
 	<iostream>
@@ -546,10 +546,10 @@
 	<iostream>
 	<SDL.h>
 
-1746406561 c:\users\admin\onedrive\dokumen\main\airplane shooting\buff.h
+1746689832 c:\users\admin\onedrive\dokumen\main\airplane shooting\buff.h
 	<SDL.h>
 
-1746406561 source:c:\users\admin\onedrive\dokumen\main\airplane shooting\buff.cpp
+1746689832 source:c:\users\admin\onedrive\dokumen\main\airplane shooting\buff.cpp
 	"Buff.h"
 	<SDL_image.h>
 	<iostream>

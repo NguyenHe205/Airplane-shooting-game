@@ -15,6 +15,9 @@ private:
     static const int SCREEN_WIDTH = 800;
     static const int SCREEN_HEIGHT = 600;
     bool hasBuff;
+    int shootingMode;
+    int buffTimer;
+    const int BUFF_DURATION = 1800;
 
 public:
     Player(SDL_Renderer* rend);
@@ -29,7 +32,8 @@ public:
     void loseLife();
     void resetLives();
     void reset();
-    void activateBuff();
+    void activateBuff(int buffType);
+    void updateBuffTimer();
     int getX() const { return rect.x; }
     int getY() const { return rect.y; }
     int getW() const { return rect.w; }
@@ -37,6 +41,7 @@ public:
     int getLives() const {return lives;}
     SDL_Rect& getRect() { return rect; }
     const SDL_Rect& getRect() const { return rect; }
+    bool isBuffActive() const {return shootingMode == 3 && buffTimer > 0;}
 };
 
 #endif

@@ -19,7 +19,7 @@ public:
     Enemy& operator=(Enemy&& other) noexcept;
     void update();
     void render();
-    int getX() const { return rect.x; } // Thêm getter
+    int getX() const { return rect.x; }
     int getY() const { return rect.y; }
     int getW() const { return rect.w; }
     int getH() const { return rect.h; }
