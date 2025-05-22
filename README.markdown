@@ -226,7 +226,7 @@ Game triển khai các cơ chế sau:
 - Cơ chế di chuyển và bắn của người chơi
 - Hệ thống xuất hiện kẻ thù và trùm với độ khó tăng dần
 - Phát hiện va chạm sử dụng Axis-Aligned Bounding Box (AABB)
-- Hệ thống buff cho vật phẩm hỗ trợ (Bắn đôi, Bắn ba)
+- Hệ thống buff cho vật phẩm hỗ trợ (Bắn đôi khi tiêu diệt boss lần thứ 2; Bắn ba khi đạt mốc điểm 2500 và +700 cho lần xuất hiện tiếp theo, buff bắn ba tồn tại trong 30 giây)
 
 ### **Hệ thống hoạt ảnh**
 
