@@ -1,7 +1,7 @@
-# <img src="Assets/player.png" width="30"> **Airplane Shooting** <img src="Assets/player.png" width="30">
+# <img src="player.png" width="30"> **Airplane Shooting** <img src="player.png" width="30">
 
 <div align="center">
-  <img src="Assets/startscreen.png" width="500">
+  <img src="startscreen.png" width="500">
 </div>
 
 ---
@@ -62,7 +62,7 @@ Game có một cấp độ vô tận với độ khó tăng dần:
 - Mạng được hiển thị bằng các biểu tượng trái tim ở góc trên bên phải
 
 <div align="center">
-  <img src="Assets/heart.png" height="50">
+  <img src="heart.png" height="50">
 </div>
 
 ## 🔧 **Kiến trúc kỹ thuật**
@@ -149,8 +149,8 @@ Dự án theo kiến trúc module được tổ chức theo chức năng:
 <div align="center">
   <table>
     <tr>
-      <td><img src="Assets/startscreen.png" width="200"></td>
-      <td><img src="Assets/gameover.png" width="200"></td>
+      <td><img src="startscreen.png" width="200"></td>
+      <td><img src="gameover.png" width="200"></td>
     </tr>
     <tr>
       <td>Màn hình bắt đầu</td>
@@ -168,8 +168,8 @@ Dự án theo kiến trúc module được tổ chức theo chức năng:
 <div align="center">
   <table>
     <tr>
-      <td><img src="Assets/explosion.png" width="200"></td>
-      <td><img src="Assets/gameover.png" width="200"></td>
+      <td><img src="explosion.png" width="200"></td>
+      <td><img src="gameover.png" width="200"></td>
     </tr>
     <tr>
       <td>Hiệu ứng nổ</td>
@@ -187,9 +187,9 @@ Dự án theo kiến trúc module được tổ chức theo chức năng:
 <div align="center">
   <table>
     <tr>
-      <td><img src="Assets/player.png" width="100"></td>
-      <td><img src="Assets/enemy.png" width="100"></td>
-      <td><img src="Assets/boss.png" width="100"></td>
+      <td><img src="player.png" width="100"></td>
+      <td><img src="enemy.png" width="100"></td>
+      <td><img src="boss.png" width="100"></td>
     </tr>
     <tr>
       <td>Người chơi (Máy bay)</td>
